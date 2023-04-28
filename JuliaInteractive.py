@@ -32,22 +32,23 @@ from numpy import arange,exp
 
 
 N=45
-xrng=[-2.05,.55]
-yrng=[-1.3,1.3]
-res=100000
+xrng=[-1,2]
+yrng=[-1.5,1.5]
+res=10000
 c=2/exp(1)
+f_text="np.conjugate((1/(z*np.sqrt(1+1/(2*z)**2)-1/2))*np.sqrt(1+(z*np.sqrt(1+1/(2*z)**2)-1/2)))"
+exitCond_text="abs(z*np.sqrt(1+1/(2*z)**2)-1/2)<1"
 
 # Generate main menu window
 #main_menu = tk.Tk()
 
 
 
-#def new_fractal():
-
+#f_text="z**2+c"
+#exitCond_text="abs(z)>2"
 
 main_window = tk.Tk()
-
-dynPlot = pf.DynamicalPlot(main_window,True,N=N,res=res,xrng=xrng,yrng=yrng)
+dynPlot = pf.DynamicalPlot(main_window,True,N=N,res=res,xrng=xrng,yrng=yrng,f_text=f_text,exitCond_text=exitCond_text)
 
 main_window.mainloop()
 

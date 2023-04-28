@@ -204,7 +204,7 @@ class FractalPlot:
         self.fractal_grid = self.fract.get_fract(self.xrng,self.yrng,self.res)
         self.fplot = self.plot_ax.imshow(self.fractal_grid, extent=self.get_extent(),
                                          interpolation="gaussian",cmap=cmap)
-        self.fplot.set_clim(1,self.fract.get_N()+1)
+        self.fplot.set_clim(0,self.fract.get_N()+1)
         self.update_axes()
 
         # Set up drawing of first several iterates, starting at mouse position and blit
@@ -236,7 +236,7 @@ class FractalPlot:
         self.update_extent()
         self.fract_grid = self.fract.get_fract(self.xrng,self.yrng,self.res)
         self.fplot.set_data(self.fract_grid)
-        self.fplot.set_clim(1,self.fract.get_N()+1)
+        self.fplot.set_clim(0,self.fract.get_N()+1)
         self.clear_plot()
         self.draw_plot()
 

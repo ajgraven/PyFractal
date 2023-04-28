@@ -193,12 +193,12 @@ class DynamicalPlot:
 
         # Text box for custom function input and label
         self.fcn_lframe = tk.LabelFrame(self.control_lframe,text='f(z,c)')
-        self.input_fcn_tb = tk.Text(self.fcn_lframe,height=3,width=15)
+        self.input_fcn_tb = tk.Text(self.fcn_lframe,height=4,width=30)
         self.input_fcn_tb.insert('1.0',self.f_text)
 
         # Text box for custom exit condition input and label
         self.exit_lframe = tk.LabelFrame(self.control_lframe,text='Exit Condition')
-        self.input_exit_tb = tk.Text(self.exit_lframe,height=3,width=15)
+        self.input_exit_tb = tk.Text(self.exit_lframe,height=3,width=30)
         self.input_exit_tb.insert('1.0',self.exitCond_text)
 
         # Colormap & interpolation dropdown menus
@@ -268,23 +268,23 @@ class DynamicalPlot:
             
     def setup_window(self):
         # Set up configuration of window
-        self.main_window.grid_rowconfigure(0, weight=1)
-        self.main_window.grid_columnconfigure(0, weight=1)
-        self.main_window.grid_columnconfigure(1, weight=6)
+        self.main_window.grid_rowconfigure(0, weight=1,minsize=500)
+        self.main_window.grid_columnconfigure(0, weight=0,minsize=300)
+        self.main_window.grid_columnconfigure(1, weight=1,minsize=500)
 
         
         self.FractPlot.get_widget().grid(       row=0,column=1,rowspan=1,columnspan=1,sticky='NSEW')
 
-        self.control_lframe.grid(               row=0,column=0,rowspan=1,columnspan=1,padx=10,pady=0,sticky='NW')
+        self.control_lframe.grid(               row=0,column=0,rowspan=1,columnspan=1,padx=10,pady=0,sticky='NSEW')
         
         self.update_plot_button.grid(           row=3,column=1,rowspan=1,columnspan=1)
         self.clear_plot_button.grid(            row=4,column=1,rowspan=1,columnspan=1)
         
-        self.fcn_lframe.grid(                   row=0,column=0,rowspan=2,columnspan=1,padx=10,pady=2)
-        self.input_fcn_tb.grid(                 row=0,column=0,rowspan=1,columnspan=1)
+        self.fcn_lframe.grid(                   row=0,column=0,rowspan=1,columnspan=2,padx=10,pady=2,sticky='NSEW')
+        self.input_fcn_tb.grid(                 row=0,column=0,rowspan=1,columnspan=1,sticky='NSEW')
         
-        self.exit_lframe.grid(                  row=0,column=1,rowspan=2,columnspan=1)
-        self.input_exit_tb.grid(                row=1,column=0,rowspan=1,columnspan=1)
+        self.exit_lframe.grid(                  row=1,column=0,rowspan=1,columnspan=2,padx=10,pady=2,sticky='NSEW')
+        self.input_exit_tb.grid(                row=1,column=0,rowspan=1,columnspan=1,sticky='NSEW')
 
         self.cmap_interp_lframe.grid(           row=5,column=0,rowspan=1,columnspan=2,sticky="NSEW")
         self.input_cmap_dd.grid(                row=0,column=0,rowspan=1,columnspan=1)
