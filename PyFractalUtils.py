@@ -55,6 +55,15 @@ interps = ['bicubic','none', 'nearest', 'bilinear', 'spline16',
            'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
            'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
+# [n,xrng,yrng,res,f_text,exitCond_text]
+presets = {"Mandelbrot":    [35,[-2,.6],[-1.25,1.25],100000,"z**2+c","abs(z)>2"],
+           "Tricorn":       [35,[-2,1.25],[-1.75,1.75],100000,"np.conjugate(z)**2+c","abs(z)>2"],
+           "Sqrt Limacon":  [20,[-1.5,2.5],[-2,2],10000,"np.conjugate(z/np.sqrt(z*np.sqrt(1+1/(2*z)**2)-1/2)**3)","abs(z*np.sqrt(1+1/(2*z)**2)-1/2)<1"],
+           "6-Cauliflower": [20,[-1.5,1.5],[-1.5,1.5],50000,"(np.sqrt(1. + 0.25/(-1. + 1/((1/3) + 0.5291336839893998/(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**(1/3) + 0.20998684164914552*(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**(1/3))))/(z*np.sqrt(1/3 + 0.5291336839893998/(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**0.3333333333333333 + 0.20998684164914552*(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**(1/3))))",
+                                                            "abs(z*((1/3) + 2**(2/3)/(3.*(4 + (3*(-9 + (-24 + 81/z**6)**(1/2)*z**3))/z**6)**(1/3)) + (4 + (3*(-9 + (-24 + 81/z**6)**(1/2)*z**3))/z**6)**(1/3)/ (3.*2**(2/3)))**(1/2))<1"],
+           "Bernoulli Lemniscate":[20,[-1.5,1.5],[-1,1],10000,"np.conjugate(z/np.sqrt(z**2-1))","abs(z**2-1)<1"]}
+preset_names = ["Mandelbrot","Tricorn","6-Cauliflower","Sqrt Limacon","Bernoulli Lemniscate"]
+
 
 class DynamicalPlot:
     '''
@@ -129,23 +138,23 @@ class DynamicalPlot:
     def add_child_plot(self,c,xrng,yrng):
         self.child_fractal_plots.append(DynamicalPlot(self.master,False,True,xrng=xrng,yrng=yrng,c=c,f_text=self.f_text,exitCond_text=self.exitCond_text))
 
-    def update_from_inputs(self):
+    def update_from_inputs(self): # Gather input values and update the corresponding variables
         self.f_text        = self.input_fcn_tb.get("1.0",tk.END)
         self.exitCond_text = self.input_exit_tb.get("1.0",tk.END)
-        self.FractPlot.set_xrng(self.get_xrng_input())
-        self.FractPlot.set_yrng(self.get_yrng_input())
-        self.FractPlot.set_period(int(self.per_input_var.get()))
-        self.FractPlot.set_nits(int(self.nits_input_var.get()))
-        self.FractPlot.set_res(int(self.res_input_var.get()))
-        self.FractPlot.set_N(int(self.N_input_var.get()))
-        self.FractPlot.set_cmap(self.cmap_input_var.get())
-        self.FractPlot.set_interp(self.interp_input_var.get())
-        self.FractPlot.set_f(compile(self.f_text, '<string>', 'eval'))
-        self.FractPlot.set_exitCond(compile(self.exitCond_text, '<string>', 'eval'))
+        self.FractPlot.set_xrng(        self.get_xrng_input())
+        self.FractPlot.set_yrng(        self.get_yrng_input())
+        self.FractPlot.set_period(      int(self.per_input_var.get()))
+        self.FractPlot.set_nits(        int(self.nits_input_var.get()))
+        self.FractPlot.set_res(         int(self.res_input_var.get()))
+        self.FractPlot.set_N(           int(self.N_input_var.get()))
+        self.FractPlot.set_cmap(        self.cmap_input_var.get())
+        self.FractPlot.set_interp(      self.interp_input_var.get())
+        self.FractPlot.set_f(           compile(self.f_text, '<string>', 'eval'))
+        self.FractPlot.set_exitCond(    compile(self.exitCond_text, '<string>', 'eval'))
         if self.is_julia:
             self.FractPlot.set_c(self.get_c_input())
 
-    def update_range_text(self):
+    def update_range_text(self): # Update plot range from values input by user
         xrng = self.FractPlot.get_xrng()
         yrng = self.FractPlot.get_yrng()
         self.input_xmin_tb.delete(0,tk.END)
@@ -175,12 +184,40 @@ class DynamicalPlot:
     def get_c_input(self):
         return float(self.rec_input_var.get())+float(self.imc_input_var.get())*1j
 
+    def draw_updated_cmap(self,event):
+        self.FractPlot.set_cmap(self.cmap_input_var.get())
+        self.FractPlot.draw_plot()
+
+    def draw_updated_iterp(self,event):
+        self.FractPlot.set_interp(self.interp_input_var.get())
+        self.FractPlot.draw_plot()
+
+    def update_nits(self,*args):
+        if self.nits_input_var.get() != '':
+            self.FractPlot.set_nits(int(self.nits_input_var.get()))
+
+    def set_from_preset(self,event):
+        choice = presets[event]
+        self.input_N_tb.delete(0,tk.END)
+        self.input_N_tb.insert(0,choice[0])
+        self.FractPlot.set_xrng(choice[1])
+        self.FractPlot.set_yrng(choice[2])
+        self.update_range_text()
+        self.input_res_tb.delete(0,tk.END)
+        self.input_res_tb.insert(0,choice[3])
+        self.input_fcn_tb.delete('1.0',tk.END)
+        self.input_fcn_tb.insert('1.0',choice[4])
+        self.input_exit_tb.delete('1.0',tk.END)
+        self.input_exit_tb.insert('1.0',choice[5])
+        self.default_xrng = choice[1]
+        self.default_yrng = choice[2]
+
+
     #################################
     #### set up inputs and style ####
     #################################
 
-    def make_controls(self,c):
-        # Set up controls
+    def make_controls(self,c): # Set up control panel
         self.control_lframe = tk.LabelFrame(self.main_window,text='Controls')
         # Plot periodic points button and period input
         self.per_lframe = tk.LabelFrame(self.control_lframe,text='Periodic Orbits')
@@ -207,8 +244,14 @@ class DynamicalPlot:
         self.interp_input_var = tk.StringVar()
         self.cmap_input_var.set(self.default_cmap)
         self.interp_input_var.set(self.default_interp)
-        self.input_cmap_dd = tk.OptionMenu(self.cmap_interp_lframe,self.cmap_input_var,*cmaps)
-        self.input_interp_dd = tk.OptionMenu(self.cmap_interp_lframe,self.interp_input_var,*interps)
+        self.input_cmap_dd = tk.OptionMenu(self.cmap_interp_lframe,self.cmap_input_var,*cmaps,command=self.draw_updated_cmap)
+        self.input_interp_dd = tk.OptionMenu(self.cmap_interp_lframe,self.interp_input_var,*interps,command=self.draw_updated_iterp)
+
+        # Presets dropdown menus
+        self.preset_lframe = tk.LabelFrame(self.control_lframe,text='Presets')
+        self.preset_input_var = tk.StringVar()
+        self.preset_input_var.set(preset_names[0])
+        self.input_preset_dd = tk.OptionMenu(self.preset_lframe,self.preset_input_var,*preset_names,command=self.set_from_preset)
 
         # Labeled frame for misc. parameters
         self.param_lframe = tk.LabelFrame(self.control_lframe,text='Parameters')
@@ -217,6 +260,7 @@ class DynamicalPlot:
         self.input_nits_txt_label = tk.Label(self.param_lframe,text="# iterates=",justify='left')
         self.input_nits_tb = tk.Entry(self.param_lframe,textvariable=self.nits_input_var,width=8)
         self.input_nits_tb.insert(0,self.FractPlot.get_nits())
+        self.nits_input_var.trace("w",self.update_nits)
         # Text box for setting resolution and label
         self.res_input_var = tk.StringVar()
         self.input_res_txt_label = tk.Label(self.param_lframe,text="# pixels=",justify='left')
@@ -289,6 +333,10 @@ class DynamicalPlot:
         self.cmap_interp_lframe.grid(           row=5,column=0,rowspan=1,columnspan=2,sticky="NSEW")
         self.input_cmap_dd.grid(                row=0,column=0,rowspan=1,columnspan=1)
         self.input_interp_dd.grid(              row=0,column=1,rowspan=1,columnspan=1)
+
+        if not self.is_julia:
+            self.preset_lframe.grid(            row=6,column=1,rowspan=1,columnspan=2,sticky="NSEW")
+            self.input_preset_dd.grid(          row=0,column=0,rowspan=1,columnspan=1)
 
         self.param_lframe.grid(                 row=2,column=0,rowspan=1,columnspan=1)
         self.input_nits_txt_label.grid(         row=0,column=0,rowspan=1,columnspan=1)

@@ -16,7 +16,7 @@
 # - add parallelization support
 # - add method of ploting number of iterates to satisfy a given condition 
 # (i.e. entering a certian region)
-#
+# - Avoid complete recomputation if only changing color scheme or interpolation.
 
 #from mpmath import *
 import PyFractalUtils as pf
@@ -30,14 +30,17 @@ from numpy import arange,exp
 ########## Set default parameters ##########
 ############################################
 
+# phi(z)=z^2+1
+N=35
+xrng=[-2,.6]
+yrng=[-1.25,1.25]
+res=100000
+c=1
+f_text="z**2+c"
+exitCond_text="abs(z)>2"
 
-N=45
-xrng=[-1,2]
-yrng=[-1.5,1.5]
-res=10000
-c=2/exp(1)
-f_text="np.conjugate((1/(z*np.sqrt(1+1/(2*z)**2)-1/2))*np.sqrt(1+(z*np.sqrt(1+1/(2*z)**2)-1/2)))"
-exitCond_text="abs(z*np.sqrt(1+1/(2*z)**2)-1/2)<1"
+
+
 
 # Generate main menu window
 #main_menu = tk.Tk()
