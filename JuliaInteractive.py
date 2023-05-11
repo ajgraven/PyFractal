@@ -30,7 +30,7 @@ from numpy import arange,exp
 ########## Set default parameters ##########
 ############################################
 
-# phi(z)=z^2+1
+# Mandelbrot Set
 N=35
 xrng=[-2,.6]
 yrng=[-1.25,1.25]

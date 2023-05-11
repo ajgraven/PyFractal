@@ -49,7 +49,7 @@ cmaps = ["jet","hsv","twilight_shifted","twilight",
          "viridis", "plasma", "inferno", "magma",
          "cividis","flag", "prism", "ocean",
          "gist_earth","terrain", "gist_stern",
-         "gnuplot","rainbow", "turbo"]
+         "gnuplot","rainbow", "turbo","Greys"]
 
 interps = ['bicubic','none', 'nearest', 'bilinear', 'spline16',
            'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
@@ -61,8 +61,12 @@ presets = {"Mandelbrot":    [35,[-2,.6],[-1.25,1.25],100000,"z**2+c","abs(z)>2"]
            "Sqrt Limacon":  [20,[-1.5,2.5],[-2,2],10000,"np.conjugate(z/np.sqrt(z*np.sqrt(1+1/(2*z)**2)-1/2)**3)","abs(z*np.sqrt(1+1/(2*z)**2)-1/2)<1"],
            "6-Cauliflower": [20,[-1.5,1.5],[-1.5,1.5],50000,"(np.sqrt(1. + 0.25/(-1. + 1/((1/3) + 0.5291336839893998/(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**(1/3) + 0.20998684164914552*(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**(1/3))))/(z*np.sqrt(1/3 + 0.5291336839893998/(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**0.3333333333333333 + 0.20998684164914552*(4. + (3.*(-9. + np.sqrt(-24. + 81./z**6)*z**3))/z**6)**(1/3))))",
                                                             "abs(z*((1/3) + 2**(2/3)/(3.*(4 + (3*(-9 + (-24 + 81/z**6)**(1/2)*z**3))/z**6)**(1/3)) + (4 + (3*(-9 + (-24 + 81/z**6)**(1/2)*z**3))/z**6)**(1/3)/ (3.*2**(2/3)))**(1/2))<1"],
-           "Bernoulli Lemniscate":[20,[-1.5,1.5],[-1,1],10000,"np.conjugate(z/np.sqrt(z**2-1))","abs(z**2-1)<1"]}
-preset_names = ["Mandelbrot","Tricorn","6-Cauliflower","Sqrt Limacon","Bernoulli Lemniscate"]
+           "Trefoil":       [10,[-5,5],[-5,5],50000,"np.conjugate(1.8171205928321397/(np.sqrt((-1.*(2.8844991406148166 + 1.2599210498948732*(np.sqrt(-12. + 81./z**6) + 9./z**3)**(2/3)))/((np.sqrt(-12. + 81./z**6) + 9./z**3)**(1/3)*z**3))*z))",
+                                                    "abs((-0.30285343213869*(2.8844991406148166 + 1.2599210498948732*(np.sqrt(-12. + 81./z**6) + 9./z**3)**(2/3))*z)/(np.sqrt(-12. + 81./z**6) + 9./z**3)**(1/3))<1"],
+           "Bernoulli Lemniscate":[20,[-1.5,1.5],[-1,1],10000,"np.conjugate(z/np.sqrt(z**2-1))","abs(z**2-1)<1"],
+           "Sqrt Ellipse":  [10,[-.5,.5],[-.5,.5],50000,"np.sqrt(0.5 + np.sqrt(0.25 - (2*c)/z**4))*np.sqrt(2*c + 1/((0.5 + np.sqrt(0.25 - (2*c)/z**4))**2*z**4))*z",
+                                                    "abs(np.sqrt(0.5 + np.sqrt(0.25 - (2*c)/z**4))*z)<1"]}
+preset_names = ["Mandelbrot","Tricorn","6-Cauliflower","Trefoil","Sqrt Limacon","Bernoulli Lemniscate","Sqrt Ellipse"]
 
 
 class DynamicalPlot:
