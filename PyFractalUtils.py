@@ -40,6 +40,7 @@ import mouse
 # Misc. imports
 from pylab import meshgrid,imshow,contour,clabel,colorbar,axis,title,show
 import ipywidgets as widgets
+from functools import partial
 
 
 mplstyle.use('fast')
@@ -65,8 +66,9 @@ presets = {"Mandelbrot":    [35,[-2,.6],[-1.25,1.25],100000,"z**2+c","abs(z)>2"]
                                                     "abs((-0.30285343213869*(2.8844991406148166 + 1.2599210498948732*(np.sqrt(-12. + 81./z**6) + 9./z**3)**(2/3))*z)/(np.sqrt(-12. + 81./z**6) + 9./z**3)**(1/3))<1"],
            "Bernoulli Lemniscate":[20,[-1.5,1.5],[-1,1],10000,"np.conjugate(z/np.sqrt(z**2-1))","abs(z**2-1)<1"],
            "Sqrt Ellipse":  [10,[-.5,.5],[-.5,.5],50000,"np.sqrt(0.5 + np.sqrt(0.25 - (2*c)/z**4))*np.sqrt(2*c + 1/((0.5 + np.sqrt(0.25 - (2*c)/z**4))**2*z**4))*z",
-                                                    "abs(np.sqrt(0.5 + np.sqrt(0.25 - (2*c)/z**4))*z)<1"]}
-preset_names = ["Mandelbrot","Tricorn","6-Cauliflower","Trefoil","Sqrt Limacon","Bernoulli Lemniscate","Sqrt Ellipse"]
+                                                    "abs(np.sqrt(0.5 + np.sqrt(0.25 - (2*c)/z**4))*z)<1"],
+           "Exponential Droplet":       [20,[-2,15],[-6,6],60000,"(c**2/z)/exp(lambertw(-c**2/z)+c**2/lambertw(-c**2/z))","abs(lambertw(-c**2/z))>abs(c)"]}
+preset_names = ["Mandelbrot","Tricorn","6-Cauliflower","Trefoil","Sqrt Limacon","Bernoulli Lemniscate","Sqrt Ellipse","Exponential Droplet"]
 
 
 class DynamicalPlot:
@@ -155,6 +157,7 @@ class DynamicalPlot:
         self.FractPlot.set_interp(      self.interp_input_var.get())
         self.FractPlot.set_f(           compile(self.f_text, '<string>', 'eval'))
         self.FractPlot.set_exitCond(    compile(self.exitCond_text, '<string>', 'eval'))
+        self.update_img_file_name()
         if self.is_julia:
             self.FractPlot.set_c(self.get_c_input())
 
@@ -187,6 +190,9 @@ class DynamicalPlot:
 
     def get_c_input(self):
         return float(self.rec_input_var.get())+float(self.imc_input_var.get())*1j
+
+    def update_img_file_name(self):
+        self.FractPlot.set_img_file_name(self.actions_fname_input_var.get())
 
     def draw_updated_cmap(self,event):
         self.FractPlot.set_cmap(self.cmap_input_var.get())
@@ -256,6 +262,20 @@ class DynamicalPlot:
         self.preset_input_var = tk.StringVar()
         self.preset_input_var.set(preset_names[0])
         self.input_preset_dd = tk.OptionMenu(self.preset_lframe,self.preset_input_var,*preset_names,command=self.set_from_preset)
+
+        # Labeled "actions" frame
+        self.actions_lframe = tk.LabelFrame(self.control_lframe,text='Actions')
+        self.actions_fname_input_var = tk.StringVar()
+        self.input_actions_fname_label = tk.Label(self.actions_lframe,text="image name",justify='left')
+        self.input_actions_tb = tk.Entry(self.actions_lframe,textvariable=self.actions_fname_input_var,width=8)
+        self.input_actions_tb.insert(0,"1.png")
+        save_gif_partial = partial(self.FractPlot.save_gif, self.actions_fname_input_var.get())
+        save_figure_partial = partial(self.FractPlot.save_figure, self.actions_fname_input_var.get())
+        self.actions_save_gif_button = tk.Button(self.actions_lframe,
+                                           text="save gif",command=self.FractPlot.save_gif_local)
+        self.actions_save_figure_button = tk.Button(self.actions_lframe,
+                                           text="save figure",command=self.FractPlot.save_figure_local)
+
 
         # Labeled frame for misc. parameters
         self.param_lframe = tk.LabelFrame(self.control_lframe,text='Parameters')
@@ -337,6 +357,12 @@ class DynamicalPlot:
         self.cmap_interp_lframe.grid(           row=5,column=0,rowspan=1,columnspan=2,sticky="NSEW")
         self.input_cmap_dd.grid(                row=0,column=0,rowspan=1,columnspan=1)
         self.input_interp_dd.grid(              row=0,column=1,rowspan=1,columnspan=1)
+
+        self.actions_lframe.grid(               row=7,column=0,rowspan=1,columnspan=3)
+        self.input_actions_fname_label.grid(    row=0,column=0,rowspan=1,columnspan=1)
+        self.input_actions_tb.grid(             row=0,column=1,rowspan=1,columnspan=1)
+        self.actions_save_gif_button.grid(      row=0,column=2,rowspan=1,columnspan=1)
+        self.actions_save_figure_button.grid(   row=0,column=3,rowspan=1,columnspan=1)
 
         if not self.is_julia:
             self.preset_lframe.grid(            row=6,column=1,rowspan=1,columnspan=2,sticky="NSEW")

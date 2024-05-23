@@ -4,7 +4,6 @@ import tkinter as tk
 from tkinter import messagebox
 import time
 import numpy as np
-import cupy as cp
 from numpy import arange,exp
 import FixedPoint as fp
 from pylab import meshgrid,imshow,contour,clabel,colorbar,axis,title,show
@@ -21,6 +20,9 @@ import mouse
 import matplotlib
 import matplotlib.style as mplstyle
 import ipywidgets as widgets
+import imageio.v3 as iio
+import shutil
+import os
 #import scipy.optimize as opt
 
 
@@ -182,6 +184,7 @@ class FractalPlot:
         self.zoompt1 = None
         self.zoompt2 = None
         self.srect_plot = None # Plot of selection rectangle for zooming
+        self.img_file_name = None
 
         
 
@@ -322,7 +325,7 @@ class FractalPlot:
                     msg_txt="Generate a Julia set at c="+"{:.3f}".format(event.xdata)+"+"+"{:.3f}".format(event.ydata)+"i?"
                 draw_julia = messagebox.askyesno("Generate Julia Set?", msg_txt)
                 if draw_julia:
-                    self.parent.add_child_plot(event.xdata+event.ydata*1j,xrng=[-1.5,1.5],yrng=[-1.5,1.5])
+                    self.parent.add_child_plot(event.xdata+event.ydata*1j,xrng=self.xrng,yrng=self.yrng)
 
 
     # Attempt to find points of period self.per, and plot them
@@ -407,8 +410,14 @@ class FractalPlot:
     def set_cmap(self,cmap):
         self.fplot.set_cmap(cmap)
 
+    def get_cmap(self):
+        self.fplot.get_cmap()
+
     def set_interp(self,interp):
         self.fplot.set_interpolation(interp)
+
+    def get_interp(self):
+        self.fplot.get_interpolation()
 
     def set_period(self,period):
         self.per = period
@@ -458,12 +467,48 @@ class FractalPlot:
     def get_exitCond(self):
         return self.fract.get_exitCond()
 
+    def set_img_file_name(self,fname):
+        self.img_file_name = fname
 
 
+    #############
+    ### misc. ###
+    #############
+    # save figure, including axes to image file
+    def save_figure(self,path):
+        self.plot_fig.savefig(path)
 
 
+    def save_gif(self,path,cvals=[.1,.3,.6,.8,1,1.1]):
+        cvals = np.linspace(-2,2,40)
+        temp_path="\\temp"
+        i=1
+        while os.path.exists(temp_path):
+            temp_path = "\\temp"+str(i)
+            i = i + 1
+        os.makedirs(temp_path)
+        i=0
+        for c in cvals:
+            self.set_c(c)
+            self.plot_ax.set_title(f"c={c:.4f}")
+            self.update_plot()
+            self.save_figure(temp_path+"\\"+str(i)+".png")
+            i = i + 1
+        if self.fract.is_julia:
+            self.plot_ax.set_title('Julia Set')
+        else:
+            self.plot_ax.set_title('Parameter Space')
+        self.update_plot()
+        images=[iio.imread(temp_path+"\\"+str(j)+".png") for j in range(i)]
+        iio.imwrite(path,images, duration = 100, loop = 0)
+        shutil.rmtree(temp_path)
 
 
+    def save_figure_local(self):
+        self.save_figure(self.img_file_name)
+
+    def save_gif_local(self):
+        self.save_gif(self.img_file_name)
 
 
 
