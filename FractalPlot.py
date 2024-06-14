@@ -185,6 +185,7 @@ class FractalPlot:
         self.zoompt2 = None
         self.srect_plot = None # Plot of selection rectangle for zooming
         self.img_file_name = None
+        self.anim_clist = [1]
 
         
 
@@ -470,6 +471,9 @@ class FractalPlot:
     def set_img_file_name(self,fname):
         self.img_file_name = fname
 
+    def set_anim_clist(self,clist):
+        self.anim_clist = clist
+
 
     #############
     ### misc. ###
@@ -480,7 +484,6 @@ class FractalPlot:
 
 
     def save_gif(self,path,cvals=[.1,.3,.6,.8,1,1.1]):
-        cvals = np.linspace(-2,2,40)
         temp_path="\\temp"
         i=1
         while os.path.exists(temp_path):
@@ -492,6 +495,7 @@ class FractalPlot:
             self.set_c(c)
             self.plot_ax.set_title(f"c={c:.4f}")
             self.update_plot()
+            self.main_window.update()
             self.save_figure(temp_path+"\\"+str(i)+".png")
             i = i + 1
         if self.fract.is_julia:
@@ -508,7 +512,7 @@ class FractalPlot:
         self.save_figure(self.img_file_name)
 
     def save_gif_local(self):
-        self.save_gif(self.img_file_name)
+        self.save_gif(self.img_file_name,self.anim_clist)
 
 
 

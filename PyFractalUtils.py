@@ -67,7 +67,7 @@ presets = {"Mandelbrot":    [35,[-2,.6],[-1.25,1.25],100000,"z**2+c","abs(z)>2"]
            "Bernoulli Lemniscate":[20,[-1.5,1.5],[-1,1],10000,"np.conjugate(z/np.sqrt(z**2-1))","abs(z**2-1)<1"],
            "Sqrt Ellipse":  [10,[-.5,.5],[-.5,.5],50000,"np.sqrt(0.5 + np.sqrt(0.25 - (2*c)/z**4))*np.sqrt(2*c + 1/((0.5 + np.sqrt(0.25 - (2*c)/z**4))**2*z**4))*z",
                                                     "abs(np.sqrt(0.5 + np.sqrt(0.25 - (2*c)/z**4))*z)<1"],
-           "Exponential Droplet":       [20,[-2,15],[-6,6],60000,"(c**2/z)/exp(lambertw(-c**2/z)+c**2/lambertw(-c**2/z))","abs(lambertw(-c**2/z))>abs(c)"]}
+           "Exponential Droplet":       [20,[-2,15],[-6,6],60000,"np.conjugate((c**2/z)/exp(lambertw(-c**2/z)+c**2/lambertw(-c**2/z)))","abs(lambertw(-c**2/z))>abs(c)"]}
 preset_names = ["Mandelbrot","Tricorn","6-Cauliflower","Trefoil","Sqrt Limacon","Bernoulli Lemniscate","Sqrt Ellipse","Exponential Droplet"]
 
 
@@ -158,6 +158,7 @@ class DynamicalPlot:
         self.FractPlot.set_f(           compile(self.f_text, '<string>', 'eval'))
         self.FractPlot.set_exitCond(    compile(self.exitCond_text, '<string>', 'eval'))
         self.update_img_file_name()
+        self.update_anim_clist()
         if self.is_julia:
             self.FractPlot.set_c(self.get_c_input())
 
@@ -192,7 +193,20 @@ class DynamicalPlot:
         return float(self.rec_input_var.get())+float(self.imc_input_var.get())*1j
 
     def update_img_file_name(self):
-        self.FractPlot.set_img_file_name(self.actions_fname_input_var.get())
+        self.FractPlot.set_img_file_name(self.animation_fname_input_var.get())
+
+    def update_anim_clist(self):
+        try:
+            t_cvals=self.input_animation_clist_tb.get("1.0",tk.END).split(",")
+            self.FractPlot.set_anim_clist([complex(c.strip()) for c in t_cvals])
+        except:
+            rnginfo=self.input_animation_clist_tb.get("1.0",tk.END).split(";")
+            c_min = complex(rnginfo[0].strip())
+            c_max = complex(rnginfo[1].strip())
+            revals=np.linspace(np.real(c_min),np.real(c_max),int(rnginfo[2]))
+            imvals=np.linspace(np.imag(c_min),np.imag(c_max),int(rnginfo[2]))
+            self.FractPlot.set_anim_clist(revals+1j*imvals)
+        
 
     def draw_updated_cmap(self,event):
         self.FractPlot.set_cmap(self.cmap_input_var.get())
@@ -263,17 +277,20 @@ class DynamicalPlot:
         self.preset_input_var.set(preset_names[0])
         self.input_preset_dd = tk.OptionMenu(self.preset_lframe,self.preset_input_var,*preset_names,command=self.set_from_preset)
 
-        # Labeled "actions" frame
-        self.actions_lframe = tk.LabelFrame(self.control_lframe,text='Actions')
-        self.actions_fname_input_var = tk.StringVar()
-        self.input_actions_fname_label = tk.Label(self.actions_lframe,text="image name",justify='left')
-        self.input_actions_tb = tk.Entry(self.actions_lframe,textvariable=self.actions_fname_input_var,width=8)
-        self.input_actions_tb.insert(0,"1.png")
-        save_gif_partial = partial(self.FractPlot.save_gif, self.actions_fname_input_var.get())
-        save_figure_partial = partial(self.FractPlot.save_figure, self.actions_fname_input_var.get())
-        self.actions_save_gif_button = tk.Button(self.actions_lframe,
+        # Labeled "animation" frame
+        self.animation_lframe = tk.LabelFrame(self.control_lframe,text='animate')
+        self.animation_fname_input_var = tk.StringVar()
+        self.animation_fname_input_var.trace_add(['write','read'],lambda x,y,z:self.update_img_file_name()) 
+        self.input_animation_fname_label = tk.Label(self.animation_lframe,text="image name",justify='left')
+        self.input_animation_tb = tk.Entry(self.animation_lframe,textvariable=self.animation_fname_input_var,width=8)
+        self.input_animation_tb.insert(0,"1.gif")
+        self.animation_clist_input_var = tk.StringVar() 
+        self.input_animation_clist_label = tk.Label(self.animation_lframe,text="c values",justify='left')
+        self.input_animation_clist_tb = tk.Text(self.animation_lframe,height=4,width=30)
+        self.input_animation_clist_tb.insert('1.0',"1+1j")
+        self.animation_save_gif_button = tk.Button(self.animation_lframe,
                                            text="save gif",command=self.FractPlot.save_gif_local)
-        self.actions_save_figure_button = tk.Button(self.actions_lframe,
+        self.animation_save_figure_button = tk.Button(self.animation_lframe,
                                            text="save figure",command=self.FractPlot.save_figure_local)
 
 
@@ -358,11 +375,12 @@ class DynamicalPlot:
         self.input_cmap_dd.grid(                row=0,column=0,rowspan=1,columnspan=1)
         self.input_interp_dd.grid(              row=0,column=1,rowspan=1,columnspan=1)
 
-        self.actions_lframe.grid(               row=7,column=0,rowspan=1,columnspan=3)
-        self.input_actions_fname_label.grid(    row=0,column=0,rowspan=1,columnspan=1)
-        self.input_actions_tb.grid(             row=0,column=1,rowspan=1,columnspan=1)
-        self.actions_save_gif_button.grid(      row=0,column=2,rowspan=1,columnspan=1)
-        self.actions_save_figure_button.grid(   row=0,column=3,rowspan=1,columnspan=1)
+        self.animation_lframe.grid(               row=7,column=0,rowspan=2,columnspan=3)
+        self.input_animation_fname_label.grid(    row=0,column=0,rowspan=1,columnspan=1)
+        self.input_animation_tb.grid(             row=0,column=1,rowspan=1,columnspan=1)
+        self.input_animation_clist_tb.grid(       row=1,column=0,rowspan=1,columnspan=4)
+        self.animation_save_gif_button.grid(      row=0,column=2,rowspan=1,columnspan=1)
+        self.animation_save_figure_button.grid(   row=0,column=3,rowspan=1,columnspan=1)
 
         if not self.is_julia:
             self.preset_lframe.grid(            row=6,column=1,rowspan=1,columnspan=2,sticky="NSEW")
